@@ -6,7 +6,6 @@ from django.contrib.auth import authenticate
 from .serializers import UserSerializer,TransactionSerializer,WalletSerializer
 from random import randint
 from rest_framework.authtoken.models import Token
-# ,TransactionHistory,TransactionHistorySerializer
 
 
 
@@ -15,15 +14,17 @@ def register(request):
         username=request.data.get('username')
         password=request.data.get('password')
         first_name=request.data.get('first_name')
-
-        otp =str(randint(100000,999999))
-        print(otp)
-        user=User(username=username,first_name=first_name,otp=otp)
-        user.set_password(password)
-        user.save()
-        Token.objects.get_or_create(user=user)
-        return Response({'message': 'User registered successfully.'})
-
+        try:
+            user=User.objects.get(username=username)
+            return Response({'message':'User already exist'})
+        except User.DoesNotExist:
+            otp =str(randint(100000,999999))
+            print(otp)
+            user=User(username=username,first_name=first_name,otp=otp)
+            user.set_password(password)
+            user.save()
+            Token.objects.get_or_create(user=user)
+            return Response({'message': 'User registered successfully.'})
 
 
 @api_view(['POST'])
